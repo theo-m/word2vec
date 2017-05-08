@@ -1,5 +1,8 @@
-src/compute-accuracy
-src/distance
-src/word-analogy
-src/word2phrase
-src/word2vec
+bin/*
+!bin/.keep
+
+embeddings/*
+!embeddings/.keep
+
+vocabs/*
+!vocabs/.keep
