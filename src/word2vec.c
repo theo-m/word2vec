@@ -29,7 +29,7 @@ const int vocab_hash_size = 30000000;  // Maximum 30 * 0.7 = 21M words in the vo
 
 typedef float real;  // Precision of float numbers
 
-struct vocab_word {
+struct Word {
     long long cn;
     int *point;
     char *word, *code, codelen;
@@ -37,7 +37,7 @@ struct vocab_word {
 
 char train_file[MAX_STRING], output_file[MAX_STRING];
 char save_vocab_file[MAX_STRING], read_vocab_file[MAX_STRING];
-struct vocab_word *vocab;
+struct Word *vocab;
 int binary = 0, cbow = 0, debug_mode = 2, window = 5, min_count = 5, num_threads = 1, min_reduce = 1;
 int *vocab_hash;
 long long vocab_max_size = 1000, vocab_size = 0, layer1_size = 100;
@@ -152,7 +152,7 @@ int add_word_to_vocab(char *word) {
     
     if (vocab_size + 2 >= vocab_max_size) {
         vocab_max_size += 1000;
-        vocab = (struct vocab_word *)realloc(vocab, vocab_max_size * sizeof(struct vocab_word));
+        vocab = (struct Word *)realloc(vocab, vocab_max_size * sizeof(struct Word));
     }
     
     hash = get_word_hash(word);
@@ -184,7 +184,7 @@ void free_vocab() {
 
 // Used later for sorting by word counts
 int vocab_compare(const void *a, const void *b) {
-    return ((struct vocab_word *)b)->cn - ((struct vocab_word *)a)->cn;
+    return ((struct Word *)b)->cn - ((struct Word *)a)->cn;
 }
 
 
@@ -193,7 +193,7 @@ void sort_vocab() {
     int a, size;
     unsigned int hash;
     // Sort the vocabulary and keep </s> at the first position
-    qsort(&vocab[1], vocab_size - 1, sizeof(struct vocab_word), vocab_compare);
+    qsort(&vocab[1], vocab_size - 1, sizeof(struct Word), vocab_compare);
     for (a = 0; a < vocab_hash_size; a++) vocab_hash[a] = -1;
     size = vocab_size;
     train_words = 0;
@@ -211,7 +211,7 @@ void sort_vocab() {
             train_words += vocab[a].cn;
         }
     }
-    vocab = (struct vocab_word *)realloc(vocab, (vocab_size + 1) * sizeof(struct vocab_word));
+    vocab = (struct Word *)realloc(vocab, (vocab_size + 1) * sizeof(struct Word));
     // Allocate memory for the binary tree construction
     for (a = 0; a < vocab_size; a++) {
         vocab[a].code = (char *)calloc(MAX_CODE_LENGTH, sizeof(char));
@@ -820,7 +820,7 @@ int main(int argc, char **argv) {
     if ((i = ArgPos((char *)"-threads", argc, argv)) > 0) num_threads = atoi(argv[i + 1]);
     if ((i = ArgPos((char *)"-min-count", argc, argv)) > 0) min_count = atoi(argv[i + 1]);
     if ((i = ArgPos((char *)"-classes", argc, argv)) > 0) classes = atoi(argv[i + 1]);
-    vocab = (struct vocab_word *)calloc(vocab_max_size, sizeof(struct vocab_word));
+    vocab = (struct Word *)calloc(vocab_max_size, sizeof(struct Word));
     vocab_hash = (int *)calloc(vocab_hash_size, sizeof(int));
     expTable = (real *)malloc((EXP_TABLE_SIZE + 1) * sizeof(real));
     if (expTable == NULL) {
